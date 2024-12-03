@@ -112,6 +112,7 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
+            modifier = Modifier.fillMaxWidth(),
             onClick = {
                 currentUser?.let { user ->
                     if (friendRequest.isNotBlank()) {

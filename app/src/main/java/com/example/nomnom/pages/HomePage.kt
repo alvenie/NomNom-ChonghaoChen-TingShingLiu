@@ -37,6 +37,7 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -121,6 +122,12 @@ fun HomePage(navController: NavHostController, authViewModel: AuthViewModel) {
                     label = { Text("Home") },
                     selected = true,
                     onClick = { /* Already on home page */ }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                    label = { Text("Find") },
+                    selected = false,
+                    onClick = { navController.navigate("search") }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
