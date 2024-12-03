@@ -75,6 +75,11 @@ dependencies {
     implementation ("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.google.maps.android:maps-compose:6.2.1")
     implementation("com.google.firebase:firebase-firestore-ktx:25.1.1")
+    implementation ("com.google.code.gson:gson:2.8.7")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("io.coil-kt:coil-compose:2.3.0")
+
 }
 
 secrets {

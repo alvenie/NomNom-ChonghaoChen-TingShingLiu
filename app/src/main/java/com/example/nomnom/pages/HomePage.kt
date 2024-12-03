@@ -43,9 +43,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.mutableFloatStateOf
+import com.example.nomnom.HomeViewModel
 
 @Composable
-fun HomePage(navController: NavHostController, authViewModel: AuthViewModel) {
+fun HomePage(navController: NavHostController, authViewModel: AuthViewModel, homeViewModel: HomeViewModel) {
 
     val context = LocalContext.current
     var hasLocationPermission by remember { mutableStateOf(false) }
@@ -127,7 +128,13 @@ fun HomePage(navController: NavHostController, authViewModel: AuthViewModel) {
                     icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                     label = { Text("Find") },
                     selected = false,
-                    onClick = { navController.navigate("search") }
+                    onClick = { homeViewModel.searchAndFilterRestaurants(
+                        currentLocation.latitude,
+                        currentLocation.longitude,
+                        distance * 1000 // Convert km to meters
+                    )
+                        navController.navigate("search")
+                    }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
@@ -159,7 +166,7 @@ fun HomePage(navController: NavHostController, authViewModel: AuthViewModel) {
             Slider(
                 value = sliderPosition,
                 onValueChange = { sliderPosition = it },
-                valueRange = 0f..1f,
+                valueRange = 0f..0.5f,
                 colors = SliderDefaults.colors(
                     thumbColor = MaterialTheme.colorScheme.secondary,
                     activeTrackColor = MaterialTheme.colorScheme.secondary,
