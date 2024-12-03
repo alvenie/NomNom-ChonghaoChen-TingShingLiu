@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +40,12 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
                     label = { Text("Home") },
                     selected = false,
                     onClick = { navController.navigate("home") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                    label = { Text("Find") },
+                    selected = false,
+                    onClick = { navController.navigate("search") }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
