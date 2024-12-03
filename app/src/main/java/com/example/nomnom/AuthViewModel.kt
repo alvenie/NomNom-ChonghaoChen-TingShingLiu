@@ -3,7 +3,6 @@ package com.example.nomnom
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
@@ -110,9 +109,9 @@ class AuthViewModel : ViewModel() {
 
 sealed class AuthState {
 
-    object Unauthenticated : AuthState()
-    object Authenticated : AuthState()
-    object Loading : AuthState()
+    data object Unauthenticated : AuthState()
+    data object Authenticated : AuthState()
+    data object Loading : AuthState()
     data class Error(val message: String) : AuthState()
 
 }

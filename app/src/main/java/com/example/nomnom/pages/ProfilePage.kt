@@ -18,7 +18,7 @@ import com.example.nomnom.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun ProfilePage(modifier: Modifier = Modifier, navController: NavHostController, authViewModel: AuthViewModel) {
+fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) {
 
     val authState by authViewModel.authState.observeAsState()
 

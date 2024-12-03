@@ -41,9 +41,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.runtime.mutableFloatStateOf
 
 @Composable
-fun HomePage(modifier: Modifier = Modifier, navController: NavHostController, authViewModel: AuthViewModel) {
+fun HomePage(navController: NavHostController, authViewModel: AuthViewModel) {
 
     val context = LocalContext.current
     var hasLocationPermission by remember { mutableStateOf(false) }
@@ -55,7 +56,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavHostController, au
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
     }
 
-    var sliderPosition by remember { mutableStateOf(0f) }
+    var sliderPosition by remember { mutableFloatStateOf(0f) }
     val distance = (sliderPosition * 10).toInt() // Convert to kilometers
 
     LaunchedEffect(Unit) {
