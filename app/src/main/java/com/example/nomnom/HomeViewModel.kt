@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import android.util.Log
 
 class HomeViewModel : ViewModel() {
     private val _restaurants = MutableStateFlow<List<Restaurant>>(emptyList())
@@ -47,10 +46,5 @@ class HomeViewModel : ViewModel() {
 
             _isLoading.value = false
         }
-    }
-
-    private fun handleError(message: String, exception: Exception? = null) {
-        Log.e("HomeViewModel", message, exception)
-        // You can also update a state to show an error message in the UI
     }
 }
