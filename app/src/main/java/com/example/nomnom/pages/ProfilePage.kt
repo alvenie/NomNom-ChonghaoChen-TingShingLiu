@@ -76,6 +76,22 @@ fun ProfilePage(modifier: Modifier = Modifier, navController: NavHostController,
                 style = MaterialTheme.typography.bodyLarge
             )
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = { /* Navigate to favorite restaurants */ }
+            ) {
+                Text("Favorite Restaurants")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { navController.navigate("friends") }
+            ) {
+                Text("Friends")
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(

@@ -5,6 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 
 class AuthViewModel : ViewModel() {
 
@@ -36,13 +39,21 @@ class AuthViewModel : ViewModel() {
 
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    updateLastLogin(task.result?.user)
                     _authState.value = AuthState.Authenticated
                 } else {
                     _authState.value = AuthState.Error(task.exception?.message ?: "Unknown error")
                 }
 
             }
+    }
 
+    private fun updateLastLogin(user: FirebaseUser?) {
+        user?.let {
+            val db = FirebaseFirestore.getInstance()
+            val userRef = db.collection("users").document(it.uid)
+            userRef.update("lastLoginAt", FieldValue.serverTimestamp())
+        }
     }
 
     fun signup(email: String, password: String) {
@@ -56,6 +67,10 @@ class AuthViewModel : ViewModel() {
 
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    val user = task.result?.user
+                    if (user != null) {
+                        createUserDocument(user)
+                    }
                     _authState.value = AuthState.Authenticated
                 } else {
                     _authState.value = AuthState.Error(task.exception?.message ?: "Unknown error")
@@ -67,6 +82,29 @@ class AuthViewModel : ViewModel() {
     fun logOut() {
         auth.signOut()
         _authState.value = AuthState.Unauthenticated
+    }
+
+    private fun createUserDocument(user: FirebaseUser) {
+        val db = FirebaseFirestore.getInstance()
+        val userRef = db.collection("users").document(user.uid)
+        val userData = hashMapOf(
+            "uid" to user.uid,
+            "email" to user.email,
+            "displayName" to user.displayName,
+            "createdAt" to FieldValue.serverTimestamp(),
+            "lastLoginAt" to FieldValue.serverTimestamp(),
+            "favorites" to listOf<String>(),
+            "friends" to listOf<String>()
+        )
+        userRef.set(userData)
+            .addOnSuccessListener {
+                // Document created successfully
+                _authState.value = AuthState.Authenticated
+            }
+            .addOnFailureListener { e ->
+                // Handle any errors
+                _authState.value = AuthState.Error("Failed to create user document: ${e.message}")
+            }
     }
 }
 

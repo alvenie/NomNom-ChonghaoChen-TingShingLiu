@@ -5,6 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.nomnom.pages.FriendRequestsPage
+import com.example.nomnom.pages.FriendsPage
 import com.example.nomnom.pages.HomePage
 import com.example.nomnom.pages.LoginPage
 import com.example.nomnom.pages.SignupPage
@@ -26,6 +28,12 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         }
         composable("profile"){
             ProfilePage(modifier, navController, authViewModel)
+        }
+        composable("friends"){
+            FriendsPage(navController, authViewModel)
+        }
+        composable("friendRequests"){
+            FriendRequestsPage(navController, authViewModel)
         }
     })
 
