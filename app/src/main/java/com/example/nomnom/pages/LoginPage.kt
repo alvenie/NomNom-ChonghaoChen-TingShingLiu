@@ -50,7 +50,7 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavHostController, a
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Login Page", fontSize = 32.sp)
+        Text(text = "Login", fontSize = 32.sp)
 
         Spacer(modifier = Modifier.height(16.dp))
 

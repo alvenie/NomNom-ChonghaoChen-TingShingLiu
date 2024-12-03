@@ -49,7 +49,7 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavHostController, 
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Signup Page", fontSize = 32.sp)
+        Text(text = "Signup", fontSize = 32.sp)
 
         Spacer(modifier = Modifier.height(16.dp))
 
