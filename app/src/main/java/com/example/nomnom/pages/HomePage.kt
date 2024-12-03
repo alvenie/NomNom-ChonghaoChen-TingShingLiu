@@ -11,16 +11,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,11 +36,17 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.MapProperties
+import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 
 @Composable
-fun Homepage(modifier: Modifier = Modifier, navController: NavHostController, authViewModel: AuthViewModel) {
+fun HomePage(modifier: Modifier = Modifier, navController: NavHostController, authViewModel: AuthViewModel) {
 
     val context = LocalContext.current
     var hasLocationPermission by remember { mutableStateOf(false) }
@@ -65,19 +66,22 @@ fun Homepage(modifier: Modifier = Modifier, navController: NavHostController, au
             ) == PackageManager.PERMISSION_GRANTED -> {
                 hasLocationPermission = true
             }
+
             else -> {
-                locationPermissionRequest.launch(arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ))
+                locationPermissionRequest.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
             }
         }
     }
 
     val authState = authViewModel.authState.observeAsState()
 
-    LaunchedEffect(authState.value){
-        when(authState.value){
+    LaunchedEffect(authState.value) {
+        when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("login")
             else -> Unit
         }
@@ -107,62 +111,40 @@ fun Homepage(modifier: Modifier = Modifier, navController: NavHostController, au
     LaunchedEffect(currentLocation) {
         cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(currentLocation, 15f))
     }
-    var showDropdown by remember { mutableStateOf(false) }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Scaffold(
+        bottomBar = {
+            BottomAppBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+                    label = { Text("Home") },
+                    selected = true,
+                    onClick = { /* Already on home page */ }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
+                    label = { Text("Profile") },
+                    selected = false,
+                    onClick = { navController.navigate("profile") }
+                )
+            }
+        }
+    ) { _ ->
         Column(
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "NomNom Home Page", fontSize = 32.sp, modifier = Modifier.padding(16.dp))
+            Text(text = "NomNom", fontSize = 32.sp, modifier = Modifier.padding(16.dp))
 
             GoogleMap(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp),
+                    .weight(1f),
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(isMyLocationEnabled = true)
             )
-        }
 
-        IconButton(
-            onClick = { showDropdown = true },
-            modifier = Modifier.align(Alignment.TopEnd).padding(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Profile"
-            )
-        }
-
-        DropdownMenu(
-            expanded = showDropdown,
-            onDismissRequest = { showDropdown = false },
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-        ) {
-            DropdownMenuItem(
-                text = { Text("Profile") },
-                onClick = {
-                    // Navigate to profile page
-                    showDropdown = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Settings") },
-                onClick = {
-                    // Navigate to settings page
-                    showDropdown = false
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Logout") },
-                onClick = {
-                    authViewModel.logOut()
-                    showDropdown = false
-                }
-            )
         }
     }
-
 }
