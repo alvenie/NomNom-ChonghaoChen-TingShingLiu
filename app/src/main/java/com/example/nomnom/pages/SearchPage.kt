@@ -25,7 +25,12 @@ import com.example.nomnom.HomeViewModel
 import coil.compose.AsyncImage
 import com.example.nomnom.Restaurant
 import android.net.Uri
-
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
+import androidx.compose.runtime.getValue
+import com.example.nomnom.R
 
 @Composable
 fun SearchPage(navController: NavHostController, homeViewModel: HomeViewModel) {
@@ -66,7 +71,12 @@ fun SearchPage(navController: NavHostController, homeViewModel: HomeViewModel) {
         }
 
         if (isLoading) {
-            CircularProgressIndicator()
+            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.animation))
+            LottieAnimation(
+                composition = composition,
+                iterations = LottieConstants.IterateForever,
+                modifier = Modifier.size(200.dp)
+            )
         } else if (restaurants.isEmpty()) {
             Text(text = "No restaurants found. Try again!", style = MaterialTheme.typography.bodyMedium)
         } else {
