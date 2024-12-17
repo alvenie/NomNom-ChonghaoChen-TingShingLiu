@@ -41,10 +41,16 @@ fun RoulettePage(navController: NavHostController, homeViewModel: HomeViewModel,
     var animationKey by remember { mutableStateOf(0) }
     var isAnimationComplete by remember { mutableStateOf(false) }
     val toastMessage by authViewModel.toastMessage.collectAsState()
+    val isFavorite by authViewModel.isFavorite.collectAsState()
     LaunchedEffect(toastMessage) {
         toastMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             authViewModel.clearToastMessage()
+        }
+    }
+    LaunchedEffect(randomRestaurant) {
+        randomRestaurant?.let { restaurant ->
+            authViewModel.checkFavoriteStatus(restaurant.name)
         }
     }
 
@@ -81,13 +87,19 @@ fun RoulettePage(navController: NavHostController, homeViewModel: HomeViewModel,
             ) {
                 randomRestaurant?.let { restaurant ->
                     IconButton(
-                        onClick = { authViewModel.addToFavorites(restaurant.name) },
+                        onClick = {
+                            if (isFavorite) {
+                                authViewModel.removeFromFavorites(restaurant.name)
+                            } else {
+                                authViewModel.addToFavorites(restaurant.name)
+                            }
+                        },
                         modifier = Modifier.size(100.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Star,
-                            contentDescription = "Add to Favorites",
-                            tint = MaterialTheme.colorScheme.primary,
+                            contentDescription = if (isFavorite) "Remove from Favorites" else "Add to Favorites",
+                            tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             modifier = Modifier.size(160.dp)
                         )
                     }

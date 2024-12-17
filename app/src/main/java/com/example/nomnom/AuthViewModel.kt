@@ -237,18 +237,58 @@ class AuthViewModel : ViewModel() {
 
     private val _toastMessage = MutableStateFlow<String?>(null)
     val toastMessage: StateFlow<String?> = _toastMessage.asStateFlow()
-    fun addToFavorites(restaurantId: String) {
-        val user = Firebase.auth.currentUser
-        user?.let { firebaseUser ->
-            val db = FirebaseFirestore.getInstance()
-            val userRef = db.collection("users").document(firebaseUser.uid)
-            userRef.update("favorites", FieldValue.arrayUnion(restaurantId))
-                .addOnSuccessListener {
-                    _toastMessage.value = "Restaurant added to favorites"
+    private val _isFavorite = MutableStateFlow(false)
+    val isFavorite: StateFlow<Boolean> = _isFavorite.asStateFlow()
+
+    fun addToFavorites(restaurantName: String) {
+        viewModelScope.launch {
+            val user = Firebase.auth.currentUser
+            user?.let { firebaseUser ->
+                val db = FirebaseFirestore.getInstance()
+                val userRef = db.collection("users").document(firebaseUser.uid)
+                userRef.update("favorites", FieldValue.arrayUnion(restaurantName))
+                    .addOnSuccessListener {
+                        _isFavorite.value = true
+                        _toastMessage.value = "Added to favorites"
+                    }
+                    .addOnFailureListener {
+                        _toastMessage.value = "Failed to add to favorites"
+                    }
+            }
+        }
+    }
+
+    fun removeFromFavorites(restaurantName: String) {
+        viewModelScope.launch {
+            val user = Firebase.auth.currentUser
+            user?.let { firebaseUser ->
+                val db = FirebaseFirestore.getInstance()
+                val userRef = db.collection("users").document(firebaseUser.uid)
+                userRef.update("favorites", FieldValue.arrayRemove(restaurantName))
+                    .addOnSuccessListener {
+                        _isFavorite.value = false
+                        _toastMessage.value = "Removed from favorites"
+                    }
+                    .addOnFailureListener {
+                        _toastMessage.value = "Failed to remove from favorites"
+                    }
+            }
+        }
+    }
+
+    fun checkFavoriteStatus(restaurantName: String) {
+        viewModelScope.launch {
+            val user = Firebase.auth.currentUser
+            user?.let { firebaseUser ->
+                val db = FirebaseFirestore.getInstance()
+                val userRef = db.collection("users").document(firebaseUser.uid)
+                userRef.get().addOnSuccessListener { document ->
+                    if (document != null) {
+                        val favorites = document.get("favorites") as? List<String>
+                        _isFavorite.value = favorites?.contains(restaurantName) == true
+                    }
                 }
-                .addOnFailureListener { e ->
-                    _toastMessage.value = "Failed to add restaurant to favorites"
-                }
+            }
         }
     }
     fun clearToastMessage() {
