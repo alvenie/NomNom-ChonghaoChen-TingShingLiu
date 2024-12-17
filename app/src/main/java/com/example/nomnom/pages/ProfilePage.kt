@@ -157,7 +157,7 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
                     // Testing
 
                     modifier = Modifier
-                        .size(100.dp)
+                        .size(200.dp)
                         .clip(CircleShape)
                         .clickable {
                             val permissions = when {
