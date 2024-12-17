@@ -24,6 +24,7 @@ import com.example.nomnom.HomeViewModel
 import coil.compose.AsyncImage
 import com.example.nomnom.Restaurant
 import android.net.Uri
+import androidx.compose.ui.unit.sp
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
@@ -84,8 +85,10 @@ fun SearchPage(navController: NavHostController, homeViewModel: HomeViewModel) {
                     navController.navigate("roulette")
                 },
                 modifier = Modifier.fillMaxWidth()
+                    .height(44.dp)
+                    .padding(horizontal = 24.dp)
             ) {
-                Text("Random Restaurant")
+                Text("Random Restaurant", fontSize = 20.sp)
             }
             LazyColumn {
                 items(restaurants) { restaurant ->

@@ -45,8 +45,9 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         composable("search"){
             SearchPage(navController, homeViewModel)
         }
-        composable("roulette"){
-            RoulettePage(navController, homeViewModel)
+        composable("roulette") {
+            RoulettePage(navController, homeViewModel, authViewModel)
+        }
         composable(
             "chat/{friendEmail}",
             arguments = listOf(navArgument("friendEmail") { type = NavType.StringType })
