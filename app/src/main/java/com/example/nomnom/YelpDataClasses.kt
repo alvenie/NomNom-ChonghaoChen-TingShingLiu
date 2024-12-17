@@ -16,7 +16,10 @@ data class YelpRestaurant(
     @SerializedName("categories") val categories: List<YelpCategory>,
     @SerializedName("location") val location: YelpLocation,
     @SerializedName("url") val yelpUrl: String
-)
+) {
+    val distanceInMiles: Double
+        get() = ((distanceInMeters / 1609.34) * 100).toInt() / 100.0
+}
 
 data class YelpCategory(
     val title: String
@@ -31,6 +34,6 @@ data class Restaurant(
     val address: String = "",
     val imageUrl: String = "",
     val rating: Double = 0.0,
-    val distanceInMeters: Double = 0.0,
+    val distanceInMiles: Double = 0.0,
     val yelpUrl: String = ""
 )

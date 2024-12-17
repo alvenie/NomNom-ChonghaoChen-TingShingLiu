@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage.ktx)
+    implementation(libs.androidx.ui.test.junit4.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -84,6 +85,9 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation("io.getstream:stream-chat-android-compose:6.7.0")
     implementation("io.getstream:stream-chat-android-offline:6.7.0")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("androidx.compose.ui:ui-test-junit4:1.5.4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.5.4")
 }
 
 secrets {
