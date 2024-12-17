@@ -53,6 +53,7 @@ class AuthViewModel : ViewModel() {
     private val _toastMessage = MutableStateFlow<String?>(null)
     val toastMessage: StateFlow<String?> = _toastMessage.asStateFlow()
 
+    // Favorite data class
     data class Favorite(
         val name: String,
         val imageUrl: String,
@@ -64,13 +65,16 @@ class AuthViewModel : ViewModel() {
     private val _favorites = MutableStateFlow<List<Favorite>>(emptyList())
     val favorites: StateFlow<List<Favorite>> = _favorites.asStateFlow()
 
+    // Favorite status
     private val _isFavorite = MutableStateFlow(false)
     val isFavorite: StateFlow<Boolean> = _isFavorite.asStateFlow()
 
+    // Initiate check authentication status
     init {
         checkAuthStatus()
     }
 
+    // Check authentication status
     private fun checkAuthStatus() {
         if (auth.currentUser == null) {
             _authState.value = AuthState.Unauthenticated
@@ -240,10 +244,12 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    // Suspend is used for coroutines
     private suspend fun updateUserDocumentProfilePicture(photoUrl: String): Boolean {
         return try {
             val user = auth.currentUser ?: throw IllegalStateException("User not authenticated")
             val userRef = firestore.collection("users").document(user.uid)
+            // Update the user's profile picture URL in Firestore
             userRef.update("profilePictureUrl", photoUrl).await()
             Log.d(TAG, "User profile picture URL updated in Firestore: $photoUrl")
             true
@@ -253,7 +259,9 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    // Fetch user profile
     fun fetchUserProfile() {
+        // Fetch profile picture URL
         viewModelScope.launch {
             try {
                 val user = auth.currentUser ?: return@launch
@@ -292,7 +300,7 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-
+    // Clear toast message
     fun clearToastMessage() {
         _toastMessage.value = null
     }
@@ -301,10 +309,12 @@ class AuthViewModel : ViewModel() {
     fun fetchFavorites() {
         val user = Firebase.auth.currentUser
         user?.let { firebaseUser ->
+            // Fetch favorites from Firestore
             val db = FirebaseFirestore.getInstance()
             val userRef = db.collection("users").document(firebaseUser.uid)
             userRef.get().addOnSuccessListener { document ->
                 if (document != null) {
+                    // Extract favorites from the document
                     val favoritesArray = document.get("favorites") as? List<Map<String, Any>>
                     val favoritesList = favoritesArray?.mapNotNull { favoriteMap ->
                         try {
@@ -318,6 +328,7 @@ class AuthViewModel : ViewModel() {
                             null
                         }
                     } ?: emptyList()
+                    // Update the favorites state
                     _favorites.value = favoritesList
                 }
             }
@@ -330,6 +341,7 @@ class AuthViewModel : ViewModel() {
             val currentUser = FirebaseAuth.getInstance().currentUser
             currentUser?.let { user ->
                 val userRef = Firebase.firestore.collection("users").document(user.uid)
+                // Remove from favorites in Firestore
                 userRef.update("favorites", FieldValue.arrayRemove(
                     _favorites.value.find { it.yelpUrl == yelpUrl }
                 )).addOnSuccessListener {
@@ -352,6 +364,7 @@ class AuthViewModel : ViewModel() {
                 val userRef = db.collection("users").document(firebaseUser.uid)
                 userRef.get().addOnSuccessListener { document ->
                     if (document != null) {
+                        // Extract favorites from the document
                         val favorites = document.get("favorites") as? List<String>
                         _isFavorite.value = favorites?.contains(restaurantName) == true
                     }

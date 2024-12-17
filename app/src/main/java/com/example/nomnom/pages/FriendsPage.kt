@@ -43,29 +43,39 @@ import com.google.firebase.firestore.firestore
 @Composable
 fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) {
 
+    // Get the current user
     val db = Firebase.firestore
     val currentUser = FirebaseAuth.getInstance().currentUser
+
+    // Track friends
     val friends by authViewModel.friends.collectAsState()
     var friendRequest by remember { mutableStateOf("") }
+
+    // Error and success messages
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successMessage by remember { mutableStateOf<String?>(null) }
 
+    // Listen for changes to current user's friends list
     LaunchedEffect(currentUser) {
         currentUser?.let { user ->
             db.collection("users").document(user.uid)
+                // Setting up a real-time listener that automatically updates the friends list when it changes
                 .addSnapshotListener { snapshot, e ->
                     if (e != null) {
                         Log.w("FriendsPage", "Listen failed.", e)
                         return@addSnapshotListener
                     }
 
+                    // Get the friends list from the snapshot
                     val friendEmails = snapshot?.get("friends") as? List<String> ?: emptyList()
 
+                    // Fetch the names of the friends from the Firestore database
                     authViewModel.fetchFriendsWithNames(friendEmails)
                 }
         }
     }
 
+    // Delete a friend
     fun deleteFriend(friendEmail: String) {
 
         currentUser?.let { user ->
@@ -118,6 +128,7 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
                     Text("You have no friends yet.", style = MaterialTheme.typography.bodyLarge)
                 }
             } else {
+                // Display friends
                 items(friends) { (email, displayName) ->
                     var showDeleteOption by remember { mutableStateOf(false) }
                     Box(
@@ -155,6 +166,7 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Send friend request
         Button(
             onClick = { navController.navigate("friendRequests") },
             modifier = Modifier.fillMaxWidth()
@@ -184,6 +196,7 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
                     if (friendRequest.isNotBlank()) {
                         db.collection("users").whereEqualTo("email", friendRequest)
                             .get()
+                            // If the user exists, send a friend request
                             .addOnSuccessListener { documents ->
                                 if (documents.isEmpty) {
                                     errorMessage = "No user found with email $friendRequest"
@@ -196,10 +209,12 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
                                             "email" to user.email,
                                             "status" to "pending"
                                         ))
+                                        // If the friend request is sent successfully, clear the input field
                                         .addOnSuccessListener {
                                             successMessage = "Friend request sent"
                                             friendRequest = ""
                                         }
+                                        // If there is an error sending the friend request, display an error message
                                         .addOnFailureListener { e ->
                                             errorMessage = "Error sending friend request: ${e.message}"
                                         }
@@ -223,12 +238,14 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
     }
 }
 
+// Dialog for deleting a friend
 @Composable
 fun DeleteFriendDialog(
     friendName: String,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
+    // AlertDialog to confirm friend deletion
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Delete Friend") },

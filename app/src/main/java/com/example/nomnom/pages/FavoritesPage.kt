@@ -33,10 +33,12 @@ fun FavoritesPage(navController: NavHostController, authViewModel: AuthViewModel
     val favorites by authViewModel.favorites.collectAsState()
     // Track whether to show the remove dialog
     var showRemoveDialog by remember { mutableStateOf(false) }
+    // Track the selected favorite
     var selectedFavorite by remember { mutableStateOf<AuthViewModel.Favorite?>(null) }
     // Get the context
     val context = LocalContext.current
 
+    // Fetch favorites when the page is loaded
     LaunchedEffect(Unit) {
         authViewModel.fetchFavorites()
     }
@@ -58,6 +60,7 @@ fun FavoritesPage(navController: NavHostController, authViewModel: AuthViewModel
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Display favorites or a message if there are none
         if (favorites.isEmpty()) {
             Text("You haven't added any favorites yet.")
         } else {
@@ -79,6 +82,7 @@ fun FavoritesPage(navController: NavHostController, authViewModel: AuthViewModel
         }
     }
 
+    // Show the remove dialog
     if (showRemoveDialog) {
         AlertDialog(
             onDismissRequest = { showRemoveDialog = false },
@@ -86,6 +90,7 @@ fun FavoritesPage(navController: NavHostController, authViewModel: AuthViewModel
             text = { Text("Do you want to remove ${selectedFavorite?.name} from your favorites?") },
             confirmButton = {
                 Button(
+                    // Remove the selected favorite
                     onClick = {
                         selectedFavorite?.let { authViewModel.removeFromFavorites(it.yelpUrl) }
                         showRemoveDialog = false
@@ -95,6 +100,7 @@ fun FavoritesPage(navController: NavHostController, authViewModel: AuthViewModel
                 }
             },
             dismissButton = {
+                // Cancel removing the favorite
                 Button(onClick = { showRemoveDialog = false }) {
                     Text("Cancel")
                 }
@@ -103,6 +109,7 @@ fun FavoritesPage(navController: NavHostController, authViewModel: AuthViewModel
     }
 }
 
+// Restaurant item
 @Composable
 fun RestaurantItem(
     favorite: AuthViewModel.Favorite,

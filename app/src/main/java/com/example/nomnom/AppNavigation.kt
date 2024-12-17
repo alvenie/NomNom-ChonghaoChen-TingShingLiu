@@ -21,9 +21,11 @@ import com.example.nomnom.pages.FavoritesPage
 
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
+    // Navigation controller
     val navController = rememberNavController()
     val homeViewModel: HomeViewModel = viewModel()
 
+    // Navigation graph
     NavHost(navController = navController, startDestination = "login", builder = {
         composable("login"){
             LoginPage(modifier, navController, authViewModel)
@@ -54,8 +56,10 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         }
         composable(
             "chat/{friendEmail}",
+            // Pass the friendEmail as a navigation argument
             arguments = listOf(navArgument("friendEmail") { type = NavType.StringType })
         ) { backStackEntry ->
+            // Extract the friendEmail from the back stack entry
             val friendEmail = backStackEntry.arguments?.getString("friendEmail") ?: ""
             ChatPage(navController, friendEmail)
         }

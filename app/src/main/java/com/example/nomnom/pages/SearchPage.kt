@@ -33,14 +33,18 @@ import com.example.nomnom.R
 
 @Composable
 fun SearchPage(navController: NavHostController, homeViewModel: HomeViewModel) {
+
+    // Fetch the list of restaurants from the ViewModel
     val restaurants by homeViewModel.restaurants.collectAsState()
+
+    // Loading state
     val isLoading by homeViewModel.isLoading.collectAsState()
     val context = LocalContext.current
 
+    // Log the number of restaurants to display
     LaunchedEffect(restaurants) {
         Log.d("SearchPage", "Number of restaurants to display: ${restaurants.size}")
     }
-
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -51,6 +55,7 @@ fun SearchPage(navController: NavHostController, homeViewModel: HomeViewModel) {
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Back button to navigate back to the home page
             IconButton(onClick = {
                 homeViewModel.clearRestaurants()
                 navController.popBackStack()
@@ -108,6 +113,7 @@ fun SearchPage(navController: NavHostController, homeViewModel: HomeViewModel) {
     }
 }
 
+// Restaurant item composable
 @Composable
 fun RestaurantItem(restaurant: Restaurant, onItemClick: (String) -> Unit) {
 

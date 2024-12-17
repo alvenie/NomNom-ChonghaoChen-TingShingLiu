@@ -155,21 +155,27 @@ fun ChatPage(navController: NavHostController, friendEmail: String) {
     }
 }
 
+// Data class for message
 data class Message(
     val senderId: String = "",
     val content: String = "",
     val timestamp: Timestamp = Timestamp.now()
 )
 
+// Helper function to generate chat ID
 fun getChatId(uid1: String, uid2: String): String {
     return if (uid1 < uid2) "$uid1-$uid2" else "$uid2-$uid1"
 }
 
+// Function to send a message
 fun sendMessage(senderId: String, receiverEmail: String, content: String) {
     val db = Firebase.firestore
+    // Find the receiver's ID
     db.collection("users").whereEqualTo("email", receiverEmail).get()
+        // Handle the result
         .addOnSuccessListener { documents ->
             if (documents.documents.isNotEmpty()) {
+                // Send the message
                 val receiverId = documents.documents[0].id
                 val chatId = getChatId(senderId, receiverId)
                 val message = Message(senderId, content, Timestamp.now())
@@ -184,7 +190,7 @@ fun sendMessage(senderId: String, receiverEmail: String, content: String) {
         }
 }
 
-
+// Message Item
 @Composable
 fun MessageItem(message: Message, isCurrentUser: Boolean) {
     Box(
@@ -193,6 +199,7 @@ fun MessageItem(message: Message, isCurrentUser: Boolean) {
             .padding(vertical = 4.dp, horizontal = 8.dp),
         contentAlignment = if (isCurrentUser) Alignment.CenterEnd else Alignment.CenterStart
     ) {
+        // Content of the message
         Text(
             text = message.content,
             modifier = Modifier

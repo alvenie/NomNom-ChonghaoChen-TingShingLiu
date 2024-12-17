@@ -73,6 +73,7 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
         authViewModel.fetchUserProfile()
     }
 
+    // Handle profile picture update
     LaunchedEffect(updateStatus) {
         updateStatus.onSuccess {
             if (it) {

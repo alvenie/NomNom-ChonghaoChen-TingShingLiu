@@ -48,9 +48,11 @@ import com.example.nomnom.HomeViewModel
 @Composable
 fun HomePage(navController: NavHostController, authViewModel: AuthViewModel, homeViewModel: HomeViewModel) {
 
+    // Location permission
     val context = LocalContext.current
     var hasLocationPermission by remember { mutableStateOf(false) }
 
+    // Request location permission
     val locationPermissionRequest = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -58,9 +60,11 @@ fun HomePage(navController: NavHostController, authViewModel: AuthViewModel, hom
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
     }
 
+    // Search radius
     var sliderPosition by remember { mutableFloatStateOf(0f) }
     val distance = (sliderPosition * 10).toDouble() // Convert to kilometers
 
+    // Request location permission
     LaunchedEffect(Unit) {
         when {
             ContextCompat.checkSelfPermission(
@@ -81,8 +85,10 @@ fun HomePage(navController: NavHostController, authViewModel: AuthViewModel, hom
         }
     }
 
+    // Handle authentication state
     val authState = authViewModel.authState.observeAsState()
 
+    // Navigate to login page if not authenticated
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate("login")
@@ -90,15 +96,18 @@ fun HomePage(navController: NavHostController, authViewModel: AuthViewModel, hom
         }
     }
 
+    // Main entry point for interacting with the fused location provider
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
     var currentLocation by remember { mutableStateOf(LatLng(0.0, 0.0)) }
 
+    // Location retrieval
     LaunchedEffect(Unit) {
         if (ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
+            // Retrieve the last known location
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let {
                     currentLocation = LatLng(it.latitude, it.longitude)
@@ -107,6 +116,7 @@ fun HomePage(navController: NavHostController, authViewModel: AuthViewModel, hom
         }
     }
 
+    // Google Map
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(currentLocation, 15f)
     }

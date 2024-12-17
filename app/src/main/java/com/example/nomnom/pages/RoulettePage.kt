@@ -36,26 +36,39 @@ import androidx.compose.runtime.mutableIntStateOf
 
 @Composable
 fun RoulettePage(navController: NavHostController, homeViewModel: HomeViewModel, authViewModel: AuthViewModel) {
+
     val context = LocalContext.current
+
+    // Random restaurant
     var randomRestaurant by remember { mutableStateOf(homeViewModel.getSelectedRestaurant()) }
+
+    // Animations
     var showAnimation by remember { mutableStateOf(true) }
     var animationKey by remember { mutableIntStateOf(0) }
     var isAnimationComplete by remember { mutableStateOf(false) }
+
+    // Toast message
     val toastMessage by authViewModel.toastMessage.collectAsState()
+
+    // Favorite status
     val isFavorite by authViewModel.isFavorite.collectAsState()
 
+    // Toast message
     LaunchedEffect(toastMessage) {
         toastMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             authViewModel.clearToastMessage()
         }
     }
+
+    // Fetch favorite status
     LaunchedEffect(randomRestaurant) {
         randomRestaurant?.let { restaurant ->
             authViewModel.checkFavoriteStatus(restaurant.name)
         }
     }
 
+    // Animation
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.wheelspin))
     val progress by animateLottieCompositionAsState(
         composition = composition,
@@ -64,6 +77,7 @@ fun RoulettePage(navController: NavHostController, homeViewModel: HomeViewModel,
         restartOnPlay = true
     )
 
+    // Update random restaurant when animation completes
     LaunchedEffect(progress) {
         if (progress == 1f) {
             isAnimationComplete = true

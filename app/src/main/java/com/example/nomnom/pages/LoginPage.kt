@@ -28,14 +28,15 @@ import com.example.nomnom.AuthViewModel
 @Composable
 fun LoginPage(modifier: Modifier = Modifier, navController: NavHostController, authViewModel: AuthViewModel) {
 
+    // Login state
     var email by remember { mutableStateOf("") }
-
     var password by remember { mutableStateOf("") }
 
+    // Handle authentication state
     val authState = authViewModel.authState.observeAsState()
-
     val context = LocalContext.current
 
+    // Navigate to home page if authenticated already
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is AuthState.Authenticated -> navController.navigate("home")
@@ -44,7 +45,7 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavHostController, a
         }
     }
 
-
+    // Login page content
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,

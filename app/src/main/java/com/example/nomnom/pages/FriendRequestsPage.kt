@@ -31,18 +31,20 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 
 @Composable
-fun FriendRequestsPage(navController: NavHostController, authViewModel: AuthViewModel) {
+fun FriendRequestsPage(navController: NavHostController) {
     val db = Firebase.firestore
+    // Get the current user
     val currentUser = FirebaseAuth.getInstance().currentUser
+    // Track friend requests
     var friendRequests by remember { mutableStateOf<List<FriendRequest>>(emptyList()) }
 
+    // Listen for friend requests
     LaunchedEffect(currentUser) {
         currentUser?.let { user ->
             db.collection("users").document(user.uid)
                 .collection("friendRequests")
                 .addSnapshotListener { snapshot, e ->
                     if (e != null) {
-                        // Handle error
                         return@addSnapshotListener
                     }
                     friendRequests = snapshot?.documents?.mapNotNull { doc ->
@@ -52,6 +54,7 @@ fun FriendRequestsPage(navController: NavHostController, authViewModel: AuthView
         }
     }
 
+    // Error message
     val errorMessage by remember { mutableStateOf<String?>(null) }
 
     Column(
@@ -68,6 +71,7 @@ fun FriendRequestsPage(navController: NavHostController, authViewModel: AuthView
             }
             Text("Friend Requests", style = MaterialTheme.typography.headlineMedium)
         }
+        // Display friend requests
         friendRequests.forEach { request ->
             FriendRequestItem(request) { accepted ->
                 if (accepted) {
@@ -83,6 +87,7 @@ fun FriendRequestsPage(navController: NavHostController, authViewModel: AuthView
     }
 }
 
+// Friend request item
 @Composable
 fun FriendRequestItem(request: FriendRequest, onResponse: (Boolean) -> Unit) {
     Column {
@@ -100,6 +105,7 @@ fun FriendRequestItem(request: FriendRequest, onResponse: (Boolean) -> Unit) {
 
 fun acceptFriendRequest(db: FirebaseFirestore, currentUserId: String?, request: FriendRequest) {
     currentUserId?.let { userId ->
+        // Update current user's friends list and friend's friends list
         db.runTransaction { transaction ->
             val currentUserRef = db.collection("users").document(userId)
             val friendRef = db.collection("users").document(request.id)
@@ -122,6 +128,7 @@ fun acceptFriendRequest(db: FirebaseFirestore, currentUserId: String?, request: 
 
 fun rejectFriendRequest(db: FirebaseFirestore, currentUserId: String?, request: FriendRequest) {
     currentUserId?.let { userId ->
+        // Remove friend request
         db.collection("users").document(userId)
             .collection("friendRequests")
             .document(request.id)
@@ -129,4 +136,9 @@ fun rejectFriendRequest(db: FirebaseFirestore, currentUserId: String?, request: 
     }
 }
 
-data class FriendRequest(val id: String, val email: String, val status: String)
+// Data class for friend request
+data class FriendRequest(
+    val id: String,
+    val email: String,
+    val status: String
+)
