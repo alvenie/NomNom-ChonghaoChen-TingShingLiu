@@ -43,7 +43,7 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
             FriendsPage(navController, authViewModel)
         }
         composable("friendRequests"){
-            FriendRequestsPage(navController, authViewModel)
+            FriendRequestsPage(navController)
         }
         composable("search"){
             SearchPage(navController, homeViewModel)
