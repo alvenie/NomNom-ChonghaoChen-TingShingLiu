@@ -313,7 +313,7 @@ class AuthViewModel : ViewModel() {
             val db = FirebaseFirestore.getInstance()
             val userRef = db.collection("users").document(firebaseUser.uid)
             userRef.get().addOnSuccessListener { document ->
-                if (document != null) {
+                if (document != null && document.exists()) {
                     // Extract favorites from the document
                     val favoritesArray = document.get("favorites") as? List<Map<String, Any>>
                     val favoritesList = favoritesArray?.mapNotNull { favoriteMap ->

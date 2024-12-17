@@ -143,7 +143,8 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
         ) {
             Box(contentAlignment = Alignment.Center) {
                 AsyncImage(
-                    // Utilize Coil's built-in disk caching capabilities. Coil automatically caches images on disk, so subsequent loads will be faster.
+                    // Utilize Coil's built-in disk caching capabilities.
+                    // Coil automatically caches images on disk, so subsequent loads will be faster.
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(profilePictureUrl)
                         .diskCachePolicy(CachePolicy.ENABLED)
