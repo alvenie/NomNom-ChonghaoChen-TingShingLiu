@@ -41,10 +41,16 @@ fun RoulettePage(navController: NavHostController, homeViewModel: HomeViewModel,
     var animationKey by remember { mutableStateOf(0) }
     var isAnimationComplete by remember { mutableStateOf(false) }
     val toastMessage by authViewModel.toastMessage.collectAsState()
+    val isFavorite by authViewModel.isFavorite.collectAsState()
     LaunchedEffect(toastMessage) {
         toastMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             authViewModel.clearToastMessage()
+        }
+    }
+    LaunchedEffect(randomRestaurant) {
+        randomRestaurant?.let { restaurant ->
+            authViewModel.checkFavoriteStatus(restaurant.name)
         }
     }
 
@@ -81,7 +87,13 @@ fun RoulettePage(navController: NavHostController, homeViewModel: HomeViewModel,
             ) {
                 randomRestaurant?.let { restaurant ->
                     IconButton(
-                        onClick = { authViewModel.addToFavorites(restaurant) },
+                        onClick = {
+                            if (isFavorite) {
+                                authViewModel.removeFromFavorites(restaurant.yelpUrl)
+                            } else {
+                                authViewModel.addToFavorites(restaurant)
+                            }
+                        },
                         modifier = Modifier.size(100.dp)
                     ) {
                         Icon(
