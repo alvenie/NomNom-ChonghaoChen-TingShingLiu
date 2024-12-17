@@ -59,7 +59,7 @@ fun HomePage(navController: NavHostController, authViewModel: AuthViewModel, hom
     }
 
     var sliderPosition by remember { mutableFloatStateOf(0f) }
-    val distance = (sliderPosition * 10).toInt() // Convert to kilometers
+    val distance = (sliderPosition * 10).toDouble() // Convert to kilometers
 
     LaunchedEffect(Unit) {
         when {
@@ -134,11 +134,12 @@ fun HomePage(navController: NavHostController, authViewModel: AuthViewModel, hom
                     icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
                     label = { Text("Find") },
                     selected = false,
-                    onClick = { homeViewModel.searchAndFilterRestaurants(
-                        currentLocation.latitude,
-                        currentLocation.longitude,
-                        distance * 1000 // Convert km to meters
-                    )
+                    onClick = {
+                        homeViewModel.searchAndFilterRestaurants(
+                            currentLocation.latitude,
+                            currentLocation.longitude,
+                            (distance * 1609.34).toInt() // Convert miles to meters
+                        )
                         navController.navigate("search")
                     }
                 )
@@ -168,7 +169,7 @@ fun HomePage(navController: NavHostController, authViewModel: AuthViewModel, hom
                 properties = MapProperties(isMyLocationEnabled = true)
             )
 
-            Text(text = "Search radius: $distance km")
+            Text(text = "Search radius: %.2f miles".format(distance))
             Slider(
                 value = sliderPosition,
                 onValueChange = { sliderPosition = it },
@@ -183,5 +184,6 @@ fun HomePage(navController: NavHostController, authViewModel: AuthViewModel, hom
                     .fillMaxWidth()
             )
         }
+
     }
 }

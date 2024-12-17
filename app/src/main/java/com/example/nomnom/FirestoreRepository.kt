@@ -21,7 +21,7 @@ class FirestoreRepository {
                     "address" to restaurant.location.address,
                     "imageUrl" to restaurant.imageUrl,
                     "rating" to restaurant.rating,
-                    "distanceInMeters" to restaurant.distanceInMeters,
+                    "distanceInMiles" to restaurant.distanceInMiles,
                     "yelpUrl" to restaurant.yelpUrl
                 )
                 restaurantsCollection.add(restaurantData)

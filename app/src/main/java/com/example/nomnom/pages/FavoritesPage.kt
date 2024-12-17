@@ -32,7 +32,6 @@ fun FavoritesPage(navController: NavHostController, authViewModel: AuthViewModel
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { navController.navigate("home") }) {

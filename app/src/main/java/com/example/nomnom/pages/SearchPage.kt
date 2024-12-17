@@ -134,7 +134,7 @@ fun RestaurantItem(restaurant: Restaurant, onItemClick: (String) -> Unit) {
                 Text(text = restaurant.name, style = MaterialTheme.typography.headlineSmall)
                 Text(text = "Rating: ${restaurant.rating}", style = MaterialTheme.typography.bodyMedium)
                 Text(text = "Address: ${restaurant.address}", style = MaterialTheme.typography.bodyMedium)
-                Text(text = "Distance: ${restaurant.distanceInMeters} meters", style = MaterialTheme.typography.bodyMedium)
+                Text(text = "Distance: ${restaurant.distanceInMiles} miles", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
