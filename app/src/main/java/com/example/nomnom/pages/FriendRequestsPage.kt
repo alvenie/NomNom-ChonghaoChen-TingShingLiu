@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.nomnom.AuthViewModel
 import com.google.firebase.Firebase
@@ -84,13 +85,15 @@ fun FriendRequestsPage(navController: NavHostController, authViewModel: AuthView
 
 @Composable
 fun FriendRequestItem(request: FriendRequest, onResponse: (Boolean) -> Unit) {
-    Row {
-        Text(request.email)
-        Button(onClick = { onResponse(true) }) {
-            Text("Accept")
-        }
-        Button(onClick = { onResponse(false) }) {
-            Text("Reject")
+    Column {
+        Text(request.email, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 32.sp))
+        Row {
+            Button(onClick = { onResponse(true) }) {
+                Text("Accept")
+            }
+            Button(onClick = { onResponse(false) }) {
+                Text("Reject")
+            }
         }
     }
 }
