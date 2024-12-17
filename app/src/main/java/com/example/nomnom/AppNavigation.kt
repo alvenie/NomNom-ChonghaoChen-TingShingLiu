@@ -3,9 +3,11 @@ package com.example.nomnom
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.nomnom.pages.FriendRequestsPage
 import com.example.nomnom.pages.FriendsPage
 import com.example.nomnom.pages.HomePage
@@ -14,6 +16,7 @@ import com.example.nomnom.pages.SignupPage
 import com.example.nomnom.pages.ProfilePage
 import com.example.nomnom.pages.RoulettePage
 import com.example.nomnom.pages.SearchPage
+import com.example.nomnom.pages.ChatPage
 
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
@@ -44,8 +47,13 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         }
         composable("roulette"){
             RoulettePage(navController, homeViewModel)
+        composable(
+            "chat/{friendEmail}",
+            arguments = listOf(navArgument("friendEmail") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val friendEmail = backStackEntry.arguments?.getString("friendEmail") ?: ""
+            ChatPage(navController, friendEmail)
         }
     })
-
 }
 

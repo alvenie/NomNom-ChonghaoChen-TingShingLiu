@@ -1,6 +1,7 @@
 package com.example.nomnom.pages
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -86,7 +87,15 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
                 }
             } else {
                 items(friends) { friendEmail ->
-                    Text(friendEmail, style = MaterialTheme.typography.bodyMedium)
+                    Text(friendEmail,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                navController.navigate("chat/${friendEmail}")
+                            }
+                            .padding(8.dp)
+                    )
                 }
             }
         }
@@ -156,3 +165,4 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
         }
     }
 }
+
