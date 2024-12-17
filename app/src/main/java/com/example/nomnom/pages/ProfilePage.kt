@@ -1,7 +1,16 @@
 package com.example.nomnom.pages
 
+import android.Manifest
+import android.content.ContentValues.TAG
+import android.net.Uri
+import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -22,12 +31,32 @@ import com.example.nomnom.AuthState
 import com.example.nomnom.AuthViewModel
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) {
 
     val authState by authViewModel.authState.observeAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
+    // Observe username and profile picture URL
+    val username by authViewModel.username.collectAsState()
+    val profilePictureUrl by authViewModel.profilePictureUrl.collectAsState()
+    val updateStatus by authViewModel.profilePictureUpdateStatus.collectAsState()
+
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    var isDialogOpen by remember { mutableStateOf(false) }
+
+    // Launch effects for authentication and data fetching
     LaunchedEffect(authState) {
         if (authState is AuthState.Unauthenticated) {
             navController.navigate("login") {
@@ -36,18 +65,45 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
         }
     }
 
-    // Fetching the username
     LaunchedEffect(Unit) {
         authViewModel.fetchUsername()
+        authViewModel.fetchUserProfile()
     }
 
-    val email = FirebaseAuth.getInstance().currentUser?.email ?: ""
+    LaunchedEffect(updateStatus) {
+        updateStatus.onSuccess {
+            if (it) {
+                isLoading = false
+                scope.launch { snackbarHostState.showSnackbar("Profile picture updated successfully") }
+            }
+        }.onFailure { exception ->
+            isLoading = false
+            scope.launch { snackbarHostState.showSnackbar("Failed to update profile picture: ${exception.message}") }
+        }
+    }
 
-    var isDialogOpen by remember { mutableStateOf(false) }
+    // Image picker launcher
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            uri?.let {
+                selectedImageUri = it
+                isLoading = true
+                authViewModel.updateProfilePicture(it)
+            }
+        }
+    )
 
-    val username by authViewModel.username.collectAsState()
-
-
+    // Permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.values.all { it }) {
+            photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        } else {
+            scope.launch { snackbarHostState.showSnackbar("Permission denied. Cannot select profile picture.") }
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -71,7 +127,8 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
                     onClick = { /* Already on profile page */ }
                 )
             }
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -80,11 +137,48 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = "Profile Picture",
-                modifier = Modifier.size(100.dp)
-            )
+            Box(contentAlignment = Alignment.Center) {
+                AsyncImage(
+                    // Utilize Coil's built-in disk caching capabilities. Coil automatically caches images on disk, so subsequent loads will be faster.
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(profilePictureUrl)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .build(),
+                    contentDescription = "Profile Picture",
+
+                    // Testing
+                    onLoading = { Log.d(TAG, "Loading image...") },
+                    onSuccess = { Log.d(TAG, "Image loaded successfully") },
+                    onError = { Log.e(TAG, "Error loading image: $it") },
+                    // Testing
+
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .clickable {
+                            val permissions = when {
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
+                                    arrayOf(
+                                        Manifest.permission.READ_MEDIA_IMAGES,
+                                        Manifest.permission.READ_MEDIA_VIDEO,
+                                        Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
+                                    )
+                                }
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+                                    arrayOf(
+                                        Manifest.permission.READ_MEDIA_IMAGES,
+                                        Manifest.permission.READ_MEDIA_VIDEO
+                                    )
+                                }
+                                else -> {
+                                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+                                }
+                            }
+                            permissionLauncher.launch(permissions)
+                        },
+                    contentScale = ContentScale.Crop
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -112,6 +206,9 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
                             isDialogOpen = false
                             // Call function to update username in database
                             authViewModel.updateDisplayName(newUsername)
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Username updated successfully")
+                            }
                         }) {
                             Text("Save")
                         }
@@ -128,7 +225,7 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = email,
+                text = FirebaseAuth.getInstance().currentUser?.email ?: "",
                 style = MaterialTheme.typography.bodyLarge
             )
 

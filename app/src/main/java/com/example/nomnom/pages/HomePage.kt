@@ -115,6 +115,12 @@ fun HomePage(navController: NavHostController, authViewModel: AuthViewModel, hom
         cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(currentLocation, 15f))
     }
 
+    // Help pre-fetch and cache the username and user profile data
+    LaunchedEffect(Unit) {
+        authViewModel.fetchUsername()
+        authViewModel.fetchUserProfile()
+    }
+
     Scaffold(
         bottomBar = {
             BottomAppBar {

@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -80,7 +81,9 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("io.coil-kt:coil-compose:2.3.0")
     implementation("com.airbnb.android:lottie-compose:6.5.2")
-
+    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation("io.getstream:stream-chat-android-compose:6.7.0")
+    implementation("io.getstream:stream-chat-android-offline:6.7.0")
 }
 
 secrets {
