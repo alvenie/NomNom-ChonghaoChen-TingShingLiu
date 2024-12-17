@@ -1,7 +1,8 @@
 package com.example.nomnom.pages
 
 import android.util.Log
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,12 +30,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.nomnom.AuthViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 
 @Composable
@@ -58,6 +62,29 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
                     val friendEmails = snapshot?.get("friends") as? List<String> ?: emptyList()
 
                     authViewModel.fetchFriendsWithNames(friendEmails)
+                }
+        }
+    }
+
+    fun deleteFriend(friendEmail: String) {
+
+        currentUser?.let { user ->
+            // Remove friend from current user's friends list
+            db.collection("users").document(user.uid)
+                .update("friends", FieldValue.arrayRemove(friendEmail))
+                .addOnSuccessListener {
+                    // Remove current user from friend's friends list
+                    db.collection("users").whereEqualTo("email", friendEmail)
+                        .get()
+                        .addOnSuccessListener { documents ->
+                            for (document in documents) {
+                                db.collection("users").document(document.id)
+                                    .update("friends", FieldValue.arrayRemove(user.email))
+                            }
+                        }
+                }
+                .addOnFailureListener { e ->
+                    errorMessage = "Error deleting friend: ${e.message}"
                 }
         }
     }
@@ -92,16 +119,36 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
                 }
             } else {
                 items(friends) { (email, displayName) ->
-                    Text(
-                        text = displayName,
-                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 24.sp),
+                    var showDeleteOption by remember { mutableStateOf(false) }
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                navController.navigate("chat/$email")
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onTap = { navController.navigate("chat/$email") },
+                                    onLongPress = { showDeleteOption = true }
+                                )
                             }
-                            .padding(8.dp)
-                    )
+                    ) {
+                        Text(
+                            text = displayName,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 24.sp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                        )
+
+                        if (showDeleteOption) {
+                            DeleteFriendDialog(
+                                friendName = displayName,
+                                onDismiss = { showDeleteOption = false },
+                                onConfirm = {
+                                    deleteFriend(email)
+                                    showDeleteOption = false
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -176,3 +223,25 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
     }
 }
 
+@Composable
+fun DeleteFriendDialog(
+    friendName: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Delete Friend") },
+        text = { Text("Are you sure you want to delete $friendName from your friends list?") },
+        confirmButton = {
+            Button(onClick = onConfirm) {
+                Text("Delete")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}

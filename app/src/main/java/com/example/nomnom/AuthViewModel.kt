@@ -24,24 +24,45 @@ import kotlinx.coroutines.tasks.await
 
 class AuthViewModel : ViewModel() {
 
+    // Firebase authentication
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val _authState = MutableLiveData<AuthState>()
     val authState: LiveData<AuthState> = _authState
 
+    // Firebase storage and firestore
     private val storage = FirebaseStorage.getInstance()
     private val firestore = FirebaseFirestore.getInstance()
 
+    // Username
     private val _username = MutableStateFlow("")
     val username: StateFlow<String> = _username.asStateFlow()
 
+    // Profile picture URL
     private val _profilePictureUrl = MutableStateFlow<String?>(null)
     val profilePictureUrl: StateFlow<String?> = _profilePictureUrl.asStateFlow()
 
+    // Profile picture update status
     private val _profilePictureUpdateStatus = MutableStateFlow(Result.success(false))
     val profilePictureUpdateStatus: StateFlow<Result<Boolean>> = _profilePictureUpdateStatus.asStateFlow()
 
+    // friends
     private val _friends = MutableStateFlow<List<Pair<String, String>>>(emptyList())
     val friends: StateFlow<List<Pair<String, String>>> = _friends.asStateFlow()
+
+    // Toast message
+    private val _toastMessage = MutableStateFlow<String?>(null)
+    val toastMessage: StateFlow<String?> = _toastMessage.asStateFlow()
+
+    data class Favorite(
+        val name: String,
+        val imageUrl: String,
+        val rating: Double,
+        val yelpUrl: String
+    )
+
+    // Favorites
+    private val _favorites = MutableStateFlow<List<Favorite>>(emptyList())
+    val favorites: StateFlow<List<Favorite>> = _favorites.asStateFlow()
 
     init {
         checkAuthStatus()
@@ -77,6 +98,7 @@ class AuthViewModel : ViewModel() {
             }
     }
 
+    // Update last login
     private fun updateLastLogin(user: FirebaseUser?) {
         user?.let {
             val db = FirebaseFirestore.getInstance()
@@ -85,18 +107,22 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    // User Signup that requires email, password, and displayName
     fun signup(email: String, password: String, displayName: String) {
+        // Check if email, password, and displayName are not empty
         if (email.isBlank() || password.isBlank() || displayName.isBlank()) {
-            _authState.value = AuthState.Error("Email, password, and display name cannot be empty")
+            _authState.value = AuthState.Error("Email, password, or display name cannot be empty")
             return
         }
         _authState.value = AuthState.Loading
 
+        // Create user with email and password
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = task.result?.user
                     if (user != null) {
+                        // Update display name and create user document
                         updateDisplayName(displayName)
                         createUserDocument(user)
                         _authState.value = AuthState.Authenticated
@@ -107,6 +133,7 @@ class AuthViewModel : ViewModel() {
             }
     }
 
+    // User Logout
     fun logOut() {
         auth.signOut()
         _authState.value = AuthState.Unauthenticated
@@ -152,6 +179,7 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    // Update Firestore display name when user profile is updated
     private fun updateUserDocumentDisplayName(newDisplayName: String) {
         val user = auth.currentUser ?: return
         val userRef = firestore.collection("users").document(user.uid)
@@ -161,6 +189,7 @@ class AuthViewModel : ViewModel() {
             .addOnFailureListener { e -> Log.e(TAG, "Error updating user display name in Firestore", e) }
     }
 
+    // Fetch username
     fun fetchUsername() {
         viewModelScope.launch {
             try {
@@ -235,29 +264,33 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    private val _toastMessage = MutableStateFlow<String?>(null)
-    val toastMessage: StateFlow<String?> = _toastMessage.asStateFlow()
-    fun addToFavorites(restaurantId: String) {
-        val user = Firebase.auth.currentUser
-        user?.let { firebaseUser ->
-            val db = FirebaseFirestore.getInstance()
-            val userRef = db.collection("users").document(firebaseUser.uid)
-            userRef.update("favorites", FieldValue.arrayUnion(restaurantId))
-                .addOnSuccessListener {
-                    _toastMessage.value = "Restaurant added to favorites"
-                }
-                .addOnFailureListener { e ->
-                    _toastMessage.value = "Failed to add restaurant to favorites"
-                }
+    // Add to favorites
+    fun addToFavorites(restaurant: Restaurant) {
+        viewModelScope.launch {
+            val favorite = Favorite(
+                name = restaurant.name,
+                imageUrl = restaurant.imageUrl,
+                rating = restaurant.rating,
+                yelpUrl = restaurant.yelpUrl
+            )
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            currentUser?.let { user ->
+                Firebase.firestore.collection("users").document(user.uid)
+                    .update("favorites", FieldValue.arrayUnion(favorite))
+                    .addOnSuccessListener {
+                        _toastMessage.value = "Added to favorites"
+                        fetchFavorites() // Refresh the favorites list
+                    }
+            }
         }
     }
+
+
     fun clearToastMessage() {
         _toastMessage.value = null
     }
 
-    private val _favorites = MutableStateFlow<List<String>>(emptyList())
-    val favorites: StateFlow<List<String>> = _favorites.asStateFlow()
-
+    // Fetch favorites
     fun fetchFavorites() {
         val user = Firebase.auth.currentUser
         user?.let { firebaseUser ->
@@ -265,13 +298,47 @@ class AuthViewModel : ViewModel() {
             val userRef = db.collection("users").document(firebaseUser.uid)
             userRef.get().addOnSuccessListener { document ->
                 if (document != null) {
-                    val favoritesArray = document.get("favorites") as? List<String>
-                    _favorites.value = favoritesArray ?: emptyList()
+                    val favoritesArray = document.get("favorites") as? List<Map<String, Any>>
+                    val favoritesList = favoritesArray?.mapNotNull { favoriteMap ->
+                        try {
+                            Favorite(
+                                name = favoriteMap["name"] as String,
+                                imageUrl = favoriteMap["imageUrl"] as String,
+                                rating = (favoriteMap["rating"] as Number).toDouble(),
+                                yelpUrl = favoriteMap["yelpUrl"] as String
+                            )
+                        } catch (e: Exception) {
+                            null
+                        }
+                    } ?: emptyList()
+                    _favorites.value = favoritesList
                 }
             }
         }
     }
 
+
+
+
+    // Remove from favorites
+    fun removeFromFavorites(yelpUrl: String) {
+        viewModelScope.launch {
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            currentUser?.let { user ->
+                val userRef = Firebase.firestore.collection("users").document(user.uid)
+                userRef.update("favorites", FieldValue.arrayRemove(
+                    _favorites.value.find { it.yelpUrl == yelpUrl }
+                )).addOnSuccessListener {
+                    fetchFavorites() // Refresh the favorites list
+                }
+            }
+        }
+    }
+
+
+
+
+    // Fetch friends with names
     fun fetchFriendsWithNames(friendEmails: List<String>) {
         viewModelScope.launch {
             Log.d("FriendsPage", "Fetching friends with names: $friendEmails")
@@ -285,6 +352,7 @@ class AuthViewModel : ViewModel() {
     }
 }
 
+// Authentication state
 sealed class AuthState {
 
     data object Unauthenticated : AuthState()

@@ -4,6 +4,7 @@ import android.util.Log
 
 class YelpRepository {
     private val apiService = RetrofitClient.apiService
+    private val authHeader = "Bearer hufhi7GLZUXp3XZl0kuRUD6pSCIR4Bm4zU2-vszNHxUdgnSkj5bmTpPKXBjPGu7Cb7f8GvWPRrYACIEOl4xfUVi9wDBdypbPITEeXLL5e5x7-EmYa0Hs2_3JkmVOZ3Yx"
 
     suspend fun searchRestaurants(
         latitude: Double,
@@ -11,7 +12,6 @@ class YelpRepository {
         radius: Int,
         limit: Int = 50 // Increased to 50, which is Yelp's maximum
     ): List<YelpRestaurant> {
-        val authHeader = "Bearer hufhi7GLZUXp3XZl0kuRUD6pSCIR4Bm4zU2-vszNHxUdgnSkj5bmTpPKXBjPGu7Cb7f8GvWPRrYACIEOl4xfUVi9wDBdypbPITEeXLL5e5x7-EmYa0Hs2_3JkmVOZ3Yx"
         val allRestaurants = mutableListOf<YelpRestaurant>()
         var offset = 0
         var total = Int.MAX_VALUE
@@ -41,6 +41,5 @@ class YelpRepository {
         return allRestaurants.filter { restaurant ->
             restaurant.distanceInMeters <= radius
         }
-
     }
 }

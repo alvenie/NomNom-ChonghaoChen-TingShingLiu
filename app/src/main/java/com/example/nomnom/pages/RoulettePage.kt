@@ -81,7 +81,7 @@ fun RoulettePage(navController: NavHostController, homeViewModel: HomeViewModel,
             ) {
                 randomRestaurant?.let { restaurant ->
                     IconButton(
-                        onClick = { authViewModel.addToFavorites(restaurant.name) },
+                        onClick = { authViewModel.addToFavorites(restaurant) },
                         modifier = Modifier.size(100.dp)
                     ) {
                         Icon(

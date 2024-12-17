@@ -64,6 +64,7 @@ fun SearchPage(navController: NavHostController, homeViewModel: HomeViewModel) {
             )
         }
 
+        // Loading animation
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize()) {
                 val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.animation))
@@ -79,6 +80,7 @@ fun SearchPage(navController: NavHostController, homeViewModel: HomeViewModel) {
             Text(text = "No restaurants found. Try again!", style = MaterialTheme.typography.bodyMedium)
         } else {
             Spacer(modifier = Modifier.height(16.dp))
+            // Button to select a random restaurant
             Button(
                 onClick = {
                     homeViewModel.selectRandomRestaurant()
@@ -90,6 +92,7 @@ fun SearchPage(navController: NavHostController, homeViewModel: HomeViewModel) {
             ) {
                 Text("Random Restaurant", fontSize = 20.sp)
             }
+            // Display the list of restaurants
             LazyColumn {
                 items(restaurants) { restaurant ->
                     RestaurantItem(
@@ -108,6 +111,7 @@ fun SearchPage(navController: NavHostController, homeViewModel: HomeViewModel) {
 @Composable
 fun RestaurantItem(restaurant: Restaurant, onItemClick: (String) -> Unit) {
 
+    // Card to display each restaurant
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -123,6 +127,7 @@ fun RestaurantItem(restaurant: Restaurant, onItemClick: (String) -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
+                // Load the restaurant image using Coil
                 model = restaurant.imageUrl,
                 contentDescription = "Restaurant image",
                 modifier = Modifier
@@ -131,6 +136,7 @@ fun RestaurantItem(restaurant: Restaurant, onItemClick: (String) -> Unit) {
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column {
+                // Display restaurant details
                 Text(text = restaurant.name, style = MaterialTheme.typography.headlineSmall)
                 Text(text = "Rating: ${restaurant.rating}", style = MaterialTheme.typography.bodyMedium)
                 Text(text = "Address: ${restaurant.address}", style = MaterialTheme.typography.bodyMedium)

@@ -1,5 +1,8 @@
 package com.example.nomnom.pages
 
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -10,16 +13,29 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.nomnom.AuthViewModel
 
 @Composable
 fun FavoritesPage(navController: NavHostController, authViewModel: AuthViewModel) {
     val favorites by authViewModel.favorites.collectAsState()
+    // Track whether to show the remove dialog
+    var showRemoveDialog by remember { mutableStateOf(false) }
+    var selectedFavorite by remember { mutableStateOf<AuthViewModel.Favorite?>(null) }
+    // Get the context
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         authViewModel.fetchFavorites()
@@ -46,10 +62,80 @@ fun FavoritesPage(navController: NavHostController, authViewModel: AuthViewModel
             Text("You haven't added any favorites yet.")
         } else {
             LazyColumn {
-                items(favorites) { restaurantId ->
-                    Text(restaurantId, style = MaterialTheme.typography.bodyLarge.copy(fontSize = 28.sp))
-                    HorizontalDivider()
+                items(favorites) { favorite ->
+                    RestaurantItem(
+                        favorite = favorite,
+                        onTap = {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(favorite.yelpUrl))
+                            context.startActivity(intent)
+                        },
+                        onLongPress = {
+                            selectedFavorite = favorite
+                            showRemoveDialog = true
+                        }
+                    )
                 }
+            }
+        }
+    }
+
+    if (showRemoveDialog) {
+        AlertDialog(
+            onDismissRequest = { showRemoveDialog = false },
+            title = { Text("Remove from Favorites") },
+            text = { Text("Do you want to remove ${selectedFavorite?.name} from your favorites?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        selectedFavorite?.let { authViewModel.removeFromFavorites(it.yelpUrl) }
+                        showRemoveDialog = false
+                    }
+                ) {
+                    Text("Remove")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showRemoveDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun RestaurantItem(
+    favorite: AuthViewModel.Favorite,
+    onTap: () -> Unit,
+    onLongPress: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { onTap() },
+                    onLongPress = { onLongPress() }
+                )
+            },
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = favorite.imageUrl,
+                contentDescription = "Restaurant image",
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(text = favorite.name, style = MaterialTheme.typography.headlineSmall)
+                Text(text = "Rating: ${favorite.rating}", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
