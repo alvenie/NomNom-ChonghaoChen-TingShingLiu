@@ -174,6 +174,23 @@ class AuthViewModel : ViewModel() {
     fun clearToastMessage() {
         _toastMessage.value = null
     }
+
+    private val _favorites = MutableStateFlow<List<String>>(emptyList())
+    val favorites: StateFlow<List<String>> = _favorites.asStateFlow()
+
+    fun fetchFavorites() {
+        val user = Firebase.auth.currentUser
+        user?.let { firebaseUser ->
+            val db = FirebaseFirestore.getInstance()
+            val userRef = db.collection("users").document(firebaseUser.uid)
+            userRef.get().addOnSuccessListener { document ->
+                if (document != null) {
+                    val favoritesArray = document.get("favorites") as? List<String>
+                    _favorites.value = favoritesArray ?: emptyList()
+                }
+            }
+        }
+    }
 }
 
 sealed class AuthState {

@@ -17,6 +17,7 @@ import com.example.nomnom.pages.ProfilePage
 import com.example.nomnom.pages.RoulettePage
 import com.example.nomnom.pages.SearchPage
 import com.example.nomnom.pages.ChatPage
+import com.example.nomnom.pages.FavoritesPage
 
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
@@ -47,6 +48,9 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         }
         composable("roulette") {
             RoulettePage(navController, homeViewModel, authViewModel)
+        }
+        composable("favorites"){
+            FavoritesPage(navController, authViewModel)
         }
         composable(
             "chat/{friendEmail}",
