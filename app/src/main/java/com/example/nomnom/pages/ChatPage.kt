@@ -193,10 +193,13 @@ fun MessageItem(message: Message, isCurrentUser: Boolean) {
             text = message.content,
             modifier = Modifier
                 .background(
-                    if (isCurrentUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                    shape = RoundedCornerShape(8.dp)
+                    if (isCurrentUser) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(16.dp)
                 )
-                .padding(8.dp)
+                .padding(12.dp),
+            color = if (isCurrentUser) MaterialTheme.colorScheme.onPrimaryContainer
+            else MaterialTheme.colorScheme.onSecondaryContainer
         )
     }
 }

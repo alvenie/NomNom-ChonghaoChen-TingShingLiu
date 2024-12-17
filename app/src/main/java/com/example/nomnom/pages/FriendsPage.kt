@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.nomnom.AuthViewModel
 import com.google.firebase.Firebase
@@ -88,7 +89,7 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
             } else {
                 items(friends) { friendEmail ->
                     Text(friendEmail,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 24.sp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
@@ -105,11 +106,13 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
         Button(
             onClick = { navController.navigate("friendRequests") },
             modifier = Modifier.fillMaxWidth()
+            .padding(bottom = 16.dp)
+            .height(60.dp)
         ) {
-            Text("View Friend Requests")
+            Text("View Friend Requests", fontSize = 24.sp)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         OutlinedTextField(
             value = friendRequest,
@@ -121,7 +124,9 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .height(60.dp)
+                .padding(bottom = 16.dp),
             onClick = {
                 currentUser?.let { user ->
                     if (friendRequest.isNotBlank()) {
@@ -154,7 +159,7 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
                 }
             }
         ) {
-            Text("Send Friend Request")
+            Text("Send Friend Request", fontSize = 24.sp)
         }
 
         errorMessage?.let {
