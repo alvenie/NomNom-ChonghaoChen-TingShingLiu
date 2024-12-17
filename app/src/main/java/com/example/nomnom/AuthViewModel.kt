@@ -14,6 +14,7 @@ import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,6 +39,9 @@ class AuthViewModel : ViewModel() {
 
     private val _profilePictureUpdateStatus = MutableStateFlow(Result.success(false))
     val profilePictureUpdateStatus: StateFlow<Result<Boolean>> = _profilePictureUpdateStatus.asStateFlow()
+
+    private val _friends = MutableStateFlow<List<Pair<String, String>>>(emptyList())
+    val friends: StateFlow<List<Pair<String, String>>> = _friends.asStateFlow()
 
     init {
         checkAuthStatus()
@@ -265,6 +269,18 @@ class AuthViewModel : ViewModel() {
                     _favorites.value = favoritesArray ?: emptyList()
                 }
             }
+        }
+    }
+
+    fun fetchFriendsWithNames(friendEmails: List<String>) {
+        viewModelScope.launch {
+            Log.d("FriendsPage", "Fetching friends with names: $friendEmails")
+            val friendsWithNames = friendEmails.map { email ->
+                val userDoc = Firebase.firestore.collection("users").whereEqualTo("email", email).get().await()
+                val displayName = userDoc.documents.firstOrNull()?.getString("displayName") ?: email
+                email to displayName
+            }
+            _friends.value = friendsWithNames
         }
     }
 }

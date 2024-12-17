@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,9 +38,10 @@ import com.google.firebase.firestore.firestore
 
 @Composable
 fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) {
+
     val db = Firebase.firestore
     val currentUser = FirebaseAuth.getInstance().currentUser
-    var friends by remember { mutableStateOf<List<String>>(emptyList()) }
+    val friends by authViewModel.friends.collectAsState()
     var friendRequest by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successMessage by remember { mutableStateOf<String?>(null) }
@@ -53,7 +55,9 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
                         return@addSnapshotListener
                     }
 
-                    friends = snapshot?.get("friends") as? List<String> ?: emptyList()
+                    val friendEmails = snapshot?.get("friends") as? List<String> ?: emptyList()
+
+                    authViewModel.fetchFriendsWithNames(friendEmails)
                 }
         }
     }
@@ -87,13 +91,14 @@ fun FriendsPage(navController: NavHostController, authViewModel: AuthViewModel) 
                     Text("You have no friends yet.", style = MaterialTheme.typography.bodyLarge)
                 }
             } else {
-                items(friends) { friendEmail ->
-                    Text(friendEmail,
+                items(friends) { (email, displayName) ->
+                    Text(
+                        text = displayName,
                         style = MaterialTheme.typography.bodyMedium.copy(fontSize = 24.sp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                navController.navigate("chat/${friendEmail}")
+                                navController.navigate("chat/$email")
                             }
                             .padding(8.dp)
                     )

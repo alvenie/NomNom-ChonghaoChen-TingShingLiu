@@ -45,6 +45,7 @@ fun ChatPage(navController: NavHostController, friendEmail: String) {
     var messages by remember { mutableStateOf<List<Message>>(emptyList()) }
     var newMessage by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
+    var friendUsername by remember { mutableStateOf("") }
 
     // Real-time listener for messages
     LaunchedEffect(currentUser, friendEmail) {
@@ -52,7 +53,10 @@ fun ChatPage(navController: NavHostController, friendEmail: String) {
             db.collection("users").whereEqualTo("email", friendEmail).get()
                 .addOnSuccessListener { documents ->
                     if (documents.documents.isNotEmpty()) {
-                        val friendId = documents.documents[0].id
+                        val friendDoc = documents.documents[0]
+                        val friendId = friendDoc.id
+                        friendUsername = friendDoc.getString("displayName") ?: friendEmail
+
                         val chatId = getChatId(user.uid, friendId)
 
                         // Listen for real-time updates on messages
@@ -99,7 +103,7 @@ fun ChatPage(navController: NavHostController, friendEmail: String) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
             Text(
-                text = "Chat with $friendEmail",
+                text = friendUsername,
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.weight(1f)
             )
