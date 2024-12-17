@@ -32,16 +32,18 @@ import com.example.nomnom.AuthViewModel
 import com.example.nomnom.R
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.runtime.mutableIntStateOf
 
 @Composable
 fun RoulettePage(navController: NavHostController, homeViewModel: HomeViewModel, authViewModel: AuthViewModel) {
     val context = LocalContext.current
     var randomRestaurant by remember { mutableStateOf(homeViewModel.getSelectedRestaurant()) }
     var showAnimation by remember { mutableStateOf(true) }
-    var animationKey by remember { mutableStateOf(0) }
+    var animationKey by remember { mutableIntStateOf(0) }
     var isAnimationComplete by remember { mutableStateOf(false) }
     val toastMessage by authViewModel.toastMessage.collectAsState()
     val isFavorite by authViewModel.isFavorite.collectAsState()
+
     LaunchedEffect(toastMessage) {
         toastMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
@@ -98,8 +100,8 @@ fun RoulettePage(navController: NavHostController, homeViewModel: HomeViewModel,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Star,
-                            contentDescription = "Add to Favorites",
-                            tint = MaterialTheme.colorScheme.primary,
+                            contentDescription = if (isFavorite) "Remove from Favorites" else "Add to Favorites",
+                            tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             modifier = Modifier.size(160.dp)
                         )
                     }

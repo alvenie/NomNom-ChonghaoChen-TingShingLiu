@@ -64,6 +64,9 @@ class AuthViewModel : ViewModel() {
     private val _favorites = MutableStateFlow<List<Favorite>>(emptyList())
     val favorites: StateFlow<List<Favorite>> = _favorites.asStateFlow()
 
+    private val _isFavorite = MutableStateFlow(false)
+    val isFavorite: StateFlow<Boolean> = _isFavorite.asStateFlow()
+
     init {
         checkAuthStatus()
     }
@@ -278,8 +281,12 @@ class AuthViewModel : ViewModel() {
                 Firebase.firestore.collection("users").document(user.uid)
                     .update("favorites", FieldValue.arrayUnion(favorite))
                     .addOnSuccessListener {
+                        _isFavorite.value = true
                         _toastMessage.value = "Added to favorites"
                         fetchFavorites() // Refresh the favorites list
+                    }
+                    .addOnFailureListener {
+                        _toastMessage.value = "Failed to add to favorites"
                     }
             }
         }
@@ -317,9 +324,6 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-
-
-
     // Remove from favorites
     fun removeFromFavorites(yelpUrl: String) {
         viewModelScope.launch {
@@ -329,14 +333,32 @@ class AuthViewModel : ViewModel() {
                 userRef.update("favorites", FieldValue.arrayRemove(
                     _favorites.value.find { it.yelpUrl == yelpUrl }
                 )).addOnSuccessListener {
+                    _isFavorite.value = false
                     fetchFavorites() // Refresh the favorites list
                 }
+                    .addOnFailureListener {
+                        _toastMessage.value = "Failed to remove from favorites"
+                    }
             }
         }
     }
 
-
-
+    // Check if restaurant is a favorite
+    fun checkFavoriteStatus(restaurantName: String) {
+        viewModelScope.launch {
+            val user = Firebase.auth.currentUser
+            user?.let { firebaseUser ->
+                val db = FirebaseFirestore.getInstance()
+                val userRef = db.collection("users").document(firebaseUser.uid)
+                userRef.get().addOnSuccessListener { document ->
+                    if (document != null) {
+                        val favorites = document.get("favorites") as? List<String>
+                        _isFavorite.value = favorites?.contains(restaurantName) == true
+                    }
+                }
+            }
+        }
+    }
 
     // Fetch friends with names
     fun fetchFriendsWithNames(friendEmails: List<String>) {
