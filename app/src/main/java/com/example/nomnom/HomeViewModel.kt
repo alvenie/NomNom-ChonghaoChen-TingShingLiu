@@ -47,4 +47,13 @@ class HomeViewModel : ViewModel() {
             _isLoading.value = false
         }
     }
+    private var selectedRestaurant: Restaurant? = null
+
+    fun selectRandomRestaurant(): Restaurant? {
+        selectedRestaurant = restaurants.value.randomOrNull()
+        return selectedRestaurant
+    }
+
+    fun getSelectedRestaurant(): Restaurant? = selectedRestaurant
+
 }

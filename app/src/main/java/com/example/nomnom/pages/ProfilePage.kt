@@ -11,6 +11,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -39,6 +41,7 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import kotlinx.coroutines.launch
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) {
@@ -134,7 +137,8 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(contentAlignment = Alignment.Center) {
@@ -232,25 +236,38 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { /* Navigate to favorite restaurants */ }
+                onClick = { navController.navigate("favorites")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .padding(horizontal = 24.dp)
             ) {
-                Text("Favorite Restaurants")
+                Text("Favorite Restaurants", fontSize = 24.sp)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { navController.navigate("friends") }
+                onClick = { navController.navigate("friends") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .padding(horizontal = 24.dp)
             ) {
-                Text("Friends")
+                Text("Friends", fontSize = 24.sp)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { authViewModel.logOut() }
+                onClick = { authViewModel.logOut() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .padding(horizontal = 24.dp)
             ) {
-                Text("Log Out")
+                Text("Log Out", fontSize = 24.sp)
             }
         }
     }

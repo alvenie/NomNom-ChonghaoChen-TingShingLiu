@@ -7,8 +7,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.auth
 import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -225,6 +227,43 @@ class AuthViewModel : ViewModel() {
                 _profilePictureUrl.value = profilePicUrl
             } catch (e: Exception) {
                 Log.e(TAG, "Error fetching user profile", e)
+            }
+        }
+    }
+
+    private val _toastMessage = MutableStateFlow<String?>(null)
+    val toastMessage: StateFlow<String?> = _toastMessage.asStateFlow()
+    fun addToFavorites(restaurantId: String) {
+        val user = Firebase.auth.currentUser
+        user?.let { firebaseUser ->
+            val db = FirebaseFirestore.getInstance()
+            val userRef = db.collection("users").document(firebaseUser.uid)
+            userRef.update("favorites", FieldValue.arrayUnion(restaurantId))
+                .addOnSuccessListener {
+                    _toastMessage.value = "Restaurant added to favorites"
+                }
+                .addOnFailureListener { e ->
+                    _toastMessage.value = "Failed to add restaurant to favorites"
+                }
+        }
+    }
+    fun clearToastMessage() {
+        _toastMessage.value = null
+    }
+
+    private val _favorites = MutableStateFlow<List<String>>(emptyList())
+    val favorites: StateFlow<List<String>> = _favorites.asStateFlow()
+
+    fun fetchFavorites() {
+        val user = Firebase.auth.currentUser
+        user?.let { firebaseUser ->
+            val db = FirebaseFirestore.getInstance()
+            val userRef = db.collection("users").document(firebaseUser.uid)
+            userRef.get().addOnSuccessListener { document ->
+                if (document != null) {
+                    val favoritesArray = document.get("favorites") as? List<String>
+                    _favorites.value = favoritesArray ?: emptyList()
+                }
             }
         }
     }
