@@ -78,7 +78,6 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
         updateStatus.onSuccess {
             if (it) {
                 isLoading = false
-                scope.launch { snackbarHostState.showSnackbar("Profile picture updated successfully") }
             }
         }.onFailure { exception ->
             isLoading = false
