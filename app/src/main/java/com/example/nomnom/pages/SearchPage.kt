@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,7 +28,6 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
-import androidx.compose.runtime.getValue
 import com.example.nomnom.R
 
 @Composable
@@ -42,11 +40,6 @@ fun SearchPage(navController: NavHostController, homeViewModel: HomeViewModel) {
         Log.d("SearchPage", "Number of restaurants to display: ${restaurants.size}")
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            homeViewModel.clearRestaurants()
-        }
-    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -71,15 +64,29 @@ fun SearchPage(navController: NavHostController, homeViewModel: HomeViewModel) {
         }
 
         if (isLoading) {
-            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.animation))
-            LottieAnimation(
-                composition = composition,
-                iterations = LottieConstants.IterateForever,
-                modifier = Modifier.size(200.dp)
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.animation))
+                LottieAnimation(
+                    composition = composition,
+                    iterations = LottieConstants.IterateForever,
+                    modifier = Modifier
+                        .size(200.dp)
+                        .align(Alignment.Center)
+                )
+            }
         } else if (restaurants.isEmpty()) {
             Text(text = "No restaurants found. Try again!", style = MaterialTheme.typography.bodyMedium)
         } else {
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    homeViewModel.selectRandomRestaurant()
+                    navController.navigate("roulette")
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Random Restaurant")
+            }
             LazyColumn {
                 items(restaurants) { restaurant ->
                     RestaurantItem(
