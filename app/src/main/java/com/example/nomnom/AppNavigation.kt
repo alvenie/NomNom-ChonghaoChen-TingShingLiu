@@ -14,6 +14,7 @@ import com.example.nomnom.pages.HomePage
 import com.example.nomnom.pages.LoginPage
 import com.example.nomnom.pages.SignupPage
 import com.example.nomnom.pages.ProfilePage
+import com.example.nomnom.pages.RoulettePage
 import com.example.nomnom.pages.SearchPage
 import com.example.nomnom.pages.ChatPage
 
@@ -44,6 +45,9 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         composable("search"){
             SearchPage(navController, homeViewModel)
         }
+        composable("roulette") {
+            RoulettePage(navController, homeViewModel, authViewModel)
+        }
         composable(
             "chat/{friendEmail}",
             arguments = listOf(navArgument("friendEmail") { type = NavType.StringType })
@@ -52,6 +56,5 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
             ChatPage(navController, friendEmail)
         }
     })
-
 }
 
