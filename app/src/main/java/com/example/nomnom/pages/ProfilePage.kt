@@ -101,6 +101,7 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
+        // If all permission are granted, it launches photo picker
         if (permissions.values.all { it }) {
             photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         } else {
@@ -163,6 +164,7 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
                         .clickable {
                             val permissions = when {
                                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE -> {
+                                    // For Android 14 and above, request read media images permission
                                     arrayOf(
                                         Manifest.permission.READ_MEDIA_IMAGES,
                                         Manifest.permission.READ_MEDIA_VIDEO,
@@ -170,12 +172,14 @@ fun ProfilePage(navController: NavHostController, authViewModel: AuthViewModel) 
                                     )
                                 }
                                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+                                    // For Android 13 and above, request read media images permission
                                     arrayOf(
                                         Manifest.permission.READ_MEDIA_IMAGES,
                                         Manifest.permission.READ_MEDIA_VIDEO
                                     )
                                 }
                                 else -> {
+                                    // For Android 12 and below, request read external storage permission
                                     arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
                                 }
                             }
