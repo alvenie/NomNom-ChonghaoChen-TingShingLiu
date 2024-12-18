@@ -52,7 +52,7 @@ fun FavoritesPage(navController: NavHostController, authViewModel: AuthViewModel
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = { navController.navigate("home") }) {
+            IconButton(onClick = { navController.navigateUp() }) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Home")
             }
             Text("Favorite Restaurants", style = MaterialTheme.typography.headlineMedium.copy(fontSize = 30.sp))
